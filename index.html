@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Landscape Research System v10.1</title>
+    <title>Landscape Research System v11.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #f4f4f2; }
         .filter-btn-active { background-color: #064e3b !important; color: white !important; }
-        .plant-card { transition: border 0.2s ease; }
+        .plant-card { transition: border 0.2s ease; height: 100%; }
         .plant-card:hover { border-color: #059669; }
         #pay-modal { display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; }
         .modal-content { background: white; padding: 3rem; border-radius: 1.5rem; max-width: 450px; text-align: center; }
@@ -22,16 +22,13 @@
     <div id="pay-modal">
         <div class="modal-content shadow-2xl">
             <h2 class="text-2xl font-black text-emerald-900 mb-2">PRO 訂閱方案</h2>
-            <p class="text-slate-500 text-sm mb-6">您的試用期已結束，請選擇訂閱方案以繼續使用。</p>
-            <div class="space-y-3 mb-6">
-                <div class="border-2 border-emerald-600 p-3 rounded-xl bg-emerald-50 text-left">
-                    <p class="font-bold text-emerald-800">專業研究版 (月費)</p>
-                    <p class="text-xs text-emerald-600">$99.00 / mo</p>
+            <p class="text-slate-500 text-sm mb-6">您的試用期已結束，請選擇訂閱方案以繼續使用全量真實植栽數據庫。</p>
+            <div class="space-y-3 mb-6 text-left">
+                <div class="border-2 border-emerald-600 p-3 rounded-xl bg-emerald-50">
+                    <p class="font-bold text-emerald-800 text-sm">專業研究版 (月費) - $99.00</p>
                 </div>
             </div>
-            <button onclick="closeModal()" class="w-full bg-emerald-800 text-white font-bold py-3 rounded-lg hover:bg-emerald-900 transition">
-                暫時繼續使用
-            </button>
+            <button onclick="closeModal()" class="w-full bg-emerald-800 text-white font-bold py-3 rounded-lg hover:bg-emerald-900 transition">暫時繼續使用</button>
         </div>
     </div>
 
@@ -39,10 +36,10 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-black tracking-widest uppercase">Landscape Research</h1>
-                <p class="text-emerald-400 text-xs mt-1">真實數據回歸 ｜ 智慧檢索 ｜ 都市設計數據庫</p>
+                <p class="text-emerald-400 text-xs mt-1 italic">90+ Real Species Database ｜ Advanced Case Search</p>
             </div>
             <div class="w-full md:w-96">
-                <input type="text" id="search-input" onkeyup="render()" placeholder="搜尋植物名稱或優缺點..." 
+                <input type="text" id="search-input" onkeyup="render()" placeholder="搜尋確切植物名稱 (如：水黃皮)..." 
                     class="w-full px-5 py-2 rounded-lg bg-emerald-900 border-none text-white placeholder-emerald-500 outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
         </div>
@@ -53,7 +50,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 class="font-bold text-sm text-emerald-900 mb-4 border-b pb-2 uppercase text-center">條件篩選</h2>
                 <div class="space-y-4">
-                    <select id="site-select" onchange="updateState('site', this.value)" class="w-full p-2 bg-slate-50 border rounded text-xs outline-none focus:border-emerald-600">
+                    <select id="site-select" onchange="updateState('site', this.value)" class="w-full p-2 bg-slate-50 border rounded text-xs outline-none">
                         <option value="all">全部場域</option>
                         <option value="street">都市街道 / 人本交通</option>
                         <option value="park">大型公園 / 滯洪池</option>
@@ -70,10 +67,8 @@
 
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 class="font-bold text-sm text-emerald-900 mb-4 border-b pb-2 uppercase text-center">Case Study 智慧搜尋</h2>
-                <input type="text" id="case-input" onkeyup="searchCases()" placeholder="輸入關鍵字 (如：台中、住宅)..." class="w-full p-2 bg-slate-50 border rounded text-xs outline-none mb-4">
-                <div id="case-display" class="space-y-3 custom-scrollbar max-h-[450px] overflow-y-auto pr-1">
-                    <p class="text-[10px] text-slate-400 italic text-center py-10">輸入關鍵字開始檢索全領域案例</p>
-                </div>
+                <input type="text" id="case-input" onkeyup="searchCases()" placeholder="關鍵字：台中、濱海、健身房..." class="w-full p-2 bg-slate-50 border rounded text-xs outline-none mb-4">
+                <div id="case-display" class="space-y-3 custom-scrollbar max-h-[500px] overflow-y-auto pr-1"></div>
             </div>
         </aside>
 
@@ -85,82 +80,116 @@
     <script>
         function closeModal() { document.getElementById('pay-modal').style.display = 'none'; }
 
-        // 真實案例庫
         const caseList = [
-            { name: "台中 忠明南路改善", desc: "人本環境導向，設置連續植栽帶與擴大步道。", tags: "台中,人本,街道" },
-            { name: "台中 綠空廊道", desc: "舊鐵道縫合，全線配置本土種與人行空間結合。", tags: "台中,歷史,街道" },
-            { name: "台中 柳川水岸", desc: "LID理念實作，親水景觀與防洪系統整合。", tags: "台中,低衝擊,滯洪池" },
-            { name: "新加坡 聖淘沙灣", desc: "頂級濱海住宅的耐鹽分景觀配置示範。", tags: "濱海,住宅,集合住宅" },
-            { name: "倫敦 Biofit 健身房", desc: "生物親和設計，將森林植栽引入運動空間。", tags: "健身房,運動,健康" },
-            { name: "米蘭 垂直森林", desc: "高密度固碳植栽，垂直森林住宅鼻祖。", tags: "碳中和,住宅,集合住宅" },
-            { name: "阿姆斯特丹 紅燈區整治", desc: "環境預防犯罪計畫，提升街道照明與視覺通透性。", tags: "紅燈區,治安,街道" },
-            { name: "桃園 龍山公園", desc: "地下排洪宮殿與地上景觀美化案例。", tags: "滯洪池,公園" }
+            { name: "台中 忠明南路人行改善", desc: "增加連續植栽帶與人行淨寬，改善台中西區微氣候。", tags: "台中,人本,街道" },
+            { name: "台中 綠空廊道", desc: "鐵道遺構縫合，全線配置台灣原生種並整合自行車道。", tags: "台中,歷史,街道" },
+            { name: "台中 綠川水岸廊道", desc: "全台首創水質處理與水岸景觀整合，翻轉舊城區意象。", tags: "台中,低衝擊,滯洪池" },
+            { name: "台中 公益路人本改善", desc: "示範街道設施帶整合，利用植栽界定人車空間。", tags: "台中,人本" },
+            { name: "台中 柳川河岸空間", desc: "結合防洪與生態綠化，成功創造都市核心休憩帶。", tags: "台中,滯洪池" },
+            { name: "新加坡 聖淘沙住宅區", desc: "頂級濱海住宅耐鹽分植栽與水岸空間配置範例。", tags: "濱海,住宅,集合住宅" },
+            { name: "阿姆斯特丹 紅燈區整治", desc: "CPTED環境預防犯罪，透過增加通透性與照明改善治安。", tags: "紅燈區,治安" },
+            { name: "倫敦 Biofit 森林健身房", desc: "將親生命設計引入戶外健身場，提升運動減壓效果。", tags: "健身房,運動" },
+            { name: "桃園 龍山生態滯洪公園", desc: "結合大型地下排洪與地上景觀，示範智慧防災空間。", tags: "滯洪池,公園" },
+            { name: "米蘭 垂直森林", desc: "高層集合住宅碳中和指標，配置數百棵喬木減少熱能吸收。", tags: "碳中和,集合住宅" }
         ];
 
-        // 真實植栽資料庫 (手動補回喬、灌、地被各 30+ 組)
         const plantDB = [
-            // --- 喬木 ---
-            { name: "台灣欒樹", type: "喬木", site: "street", pros: "四季變化、抗廢氣", cons: "落果易有椿象", toxic: "無毒", partner: "馬纓丹", desc: "原生經典行道樹。" },
-            { name: "樟樹", type: "喬木", site: "street", pros: "氣味清香、耐風", cons: "生長慢、忌積水", toxic: "無毒", partner: "腎蕨", desc: "林蔭主力。" },
-            { name: "大葉山欖", type: "喬木", site: "street", pros: "抗鹽耐風極強", cons: "果實落地有異味", toxic: "無毒", partner: "文殊蘭", desc: "濱海首選。" },
-            { name: "茄苳", type: "喬木", site: "park", pros: "遮蔭大、生態豐富", cons: "落果引鳥後較髒", toxic: "無毒", partner: "姑婆芋", desc: "原生護國神樹。" },
-            { name: "光蠟樹", type: "喬木", site: "park", pros: "幹皮美、獨角仙食源", cons: "落葉量大", toxic: "無毒", partner: "杜鵑", desc: "生態設計核心。" },
-            { name: "楓香", type: "喬木", site: "park", pros: "姿態美、季節感強", cons: "平地變色效果普", toxic: "無毒", partner: "月橘", desc: "營造森林感。" },
-            { name: "黃連木", type: "喬木", site: "street", pros: "耐旱抗風、長壽", cons: "生長極慢", toxic: "無毒", partner: "變葉木", desc: "古風氣質。" },
-            { name: "落羽松", type: "喬木", site: "park", pros: "秋冬紅葉、親水", cons: "氣根突起會破路", toxic: "無毒", partner: "野薑花", desc: "親水點綴。" },
-            { name: "水黃皮", type: "喬木", site: "street", pros: "耐鹽抗風抗污染", cons: "生長快需剪", toxic: "種子有毒", partner: "草海桐", desc: "海濱行道樹。" },
-            { name: "小葉欖仁", type: "喬木", site: "street", pros: "分層美、現代感", cons: "根系破壞力強", toxic: "無毒", partner: "沿階草", desc: "商業空間最愛。" },
-            { name: "羅漢松", type: "喬木", site: "pocket", pros: "高質感、耐剪", cons: "單價較高", toxic: "無毒", partner: "麥門冬", desc: "精品造景。" },
-            { name: "苦楝", type: "喬木", site: "park", pros: "紫花香、原生種", cons: "落葉期醜", toxic: "果實有毒", partner: "杜鵑", desc: "本土耐寒。" },
-            { name: "鳳凰木", type: "喬木", site: "park", pros: "開花燦爛、遮蔭強", cons: "易斷枝、根隆起", toxic: "花/子有毒", partner: "腎蕨", desc: "大型景觀。" },
-            { name: "大花紫薇", type: "喬木", site: "street", pros: "夏花美、耐旱", cons: "落葉量大", toxic: "無毒", partner: "仙丹", desc: "夏季行道樹。" },
-            { name: "山櫻花", type: "喬木", site: "park", pros: "春季緋紅、誘鳥", cons: "不耐熱", toxic: "無毒", partner: "杜鵑", desc: "原生浪漫。" },
-            { name: "雞蛋花", type: "喬木", site: "pocket", pros: "熱帶香氣、姿態美", cons: "冬光禿、乳汁毒", toxic: "汁液毒", partner: "朱蕉", desc: "度假感。" },
-            { name: "阿勃勒", type: "喬木", site: "street", pros: "黃金雨景觀", cons: "果實重危險", toxic: "無毒", partner: "馬纓丹", desc: "視覺焦點。" },
-            { name: "青楓", type: "喬木", site: "park", pros: "葉型美、季節感", cons: "夏季焦葉", toxic: "無毒", partner: "蕨類", desc: "精緻景觀。" },
-            { name: "白千層", type: "喬木", site: "street", pros: "吸水強、抗風", cons: "花粉致敏", toxic: "無毒", partner: "沿階草", desc: "紙感樹皮。" },
-            { name: "烏桕", type: "喬木", site: "park", pros: "菱形葉、紅葉快", cons: "易生毛毛蟲", toxic: "乳汁刺激", partner: "仙丹", desc: "變色之美。" },
-            // (喬木補齊至30種...)
+            // --- 喬木 (30 組) ---
+            { name: "台灣欒樹", type: "喬木", site: "street", pros: "四季有別、抗廢氣強", cons: "椿象多、落果量大", toxic: "無毒", partner: "馬纓丹", desc: "台灣特有種行道樹。" },
+            { name: "樟樹", type: "喬木", site: "street", pros: "氣味清香、耐風災", cons: "生長慢、不耐積水", toxic: "無毒", partner: "腎蕨", desc: "林蔭大道主力種。" },
+            { name: "茄苳", type: "喬木", site: "park", pros: "遮蔭效果極佳、生態高", cons: "果落量大引蟲", toxic: "無毒", partner: "姑婆芋", desc: "原生種護國神樹。" },
+            { name: "大葉山欖", type: "喬木", site: "street", pros: "抗風耐鹽、極度強健", cons: "果實異味、掉落易滑", toxic: "無毒", partner: "文殊蘭", desc: "濱海街道首選。" },
+            { name: "光蠟樹", type: "喬木", site: "park", pros: "幹皮優美、誘蝶引蟬", cons: "落葉量較驚人", toxic: "無毒", partner: "月橘", desc: "生態公園核心種。" },
+            { name: "楓香", type: "喬木", site: "park", pros: "樹姿挺拔、季節感美", cons: "平地紅葉效果有限", toxic: "無毒", partner: "地被蕨類", desc: "營造森林感。" },
+            { name: "黃連木", type: "喬木", site: "street", pros: "耐旱抗風、壽命長", cons: "初期生長極慢", toxic: "無毒", partner: "變葉木", desc: "古風氣質植物。" },
+            { name: "苦楝", type: "喬木", site: "park", pros: "春季紫花香、原生種", cons: "落葉期長且荒涼", toxic: "果實有毒", partner: "冷水花", desc: "本土耐寒樹種。" },
+            { name: "落羽松", type: "喬木", site: "park", pros: "秋冬變紅、耐水淹", cons: "氣根隆起破壞步道", toxic: "無毒", partner: "野薑花", desc: "親水岸焦點。" },
+            { name: "白千層", type: "喬木", site: "street", pros: "耐強風、吸水力強", cons: "花粉季節致敏", toxic: "無毒", partner: "沿階草", desc: "紙質感樹皮特色。" },
+            { name: "黃花風鈴木", type: "喬木", site: "street", pros: "開花爆發力強、美觀", cons: "花期短、落葉多", toxic: "無毒", partner: "仙丹花", desc: "季節性地標。" },
+            { name: "小葉欖仁", type: "喬木", site: "street", pros: "分層明顯、現代感", cons: "根系具強大破壞力", toxic: "無毒", partner: "蔓花生", desc: "商業空間最愛。" },
+            { name: "青楓", type: "喬木", site: "park", pros: "細緻葉型、雅緻", cons: "不耐強曬、怕旱", toxic: "無毒", partner: "腎蕨", desc: "精緻景觀喬木。" },
+            { name: "羅漢松", type: "喬木", site: "pocket", pros: "高質感、極耐修剪", cons: "單價高、生長慢", toxic: "果實有毒", partner: "麥門冬", desc: "精品造景首選。" },
+            { name: "烏桕", type: "喬木", site: "park", pros: "紅葉快、菱形葉美", cons: "易患毛毛蟲", toxic: "乳汁具刺激", partner: "金葉連翹", desc: "經典變色種。" },
+            { name: "水黃皮", type: "喬木", site: "street", pros: "抗風、耐鹽、抗污", cons: "生長強勢需頻繁剪", toxic: "種子有毒", partner: "文殊蘭", desc: "濱海住宅街道。" },
+            { name: "鳳凰木", type: "喬木", site: "park", pros: "大傘型遮蔭、花紅", cons: "根系隆起、易倒", toxic: "全株毒", partner: "地被植物", desc: "老公園標誌。" },
+            { name: "阿勃勒", type: "喬木", site: "street", pros: "黃金雨視覺效果", cons: "果莢掉落危險", toxic: "無毒", partner: "馬纓丹", desc: "夏季視覺焦點。" },
+            { name: "洋紅風鈴木", type: "喬木", site: "street", pros: "粉色花海、強健", cons: "花期短", toxic: "無毒", partner: "沿階草", desc: "浪漫行道樹。" },
+            { name: "雞蛋花", type: "喬木", site: "pocket", pros: "熱帶香、姿態美", cons: "冬光禿、乳汁毒", toxic: "汁液毒", partner: "朱蕉", desc: "度假風配置。" },
+            { name: "無患子", type: "喬木", site: "park", pros: "原生變色葉、強健", cons: "不耐長期積水", toxic: "無毒", partner: "蔓花生", desc: "古風文化樹。" },
+            { name: "大花紫薇", type: "喬木", site: "street", pros: "夏花紫、耐熱旱", cons: "冬季落葉多", toxic: "無毒", partner: "仙丹", desc: "城市景觀色彩。" },
+            { name: "黑松", type: "喬木", site: "pocket", pros: "蒼勁有力、耐寒", cons: "維護成本極高", toxic: "無毒", partner: "白砂石", desc: "日式庭園核心。" },
+            { name: "台灣海棗", type: "喬木", site: "street", pros: "耐鹽抗風、熱帶感", cons: "葉尖帶刺危險", toxic: "無毒", partner: "草海桐", desc: "濱海地標植栽。" },
+            { name: "小葉黃楊", type: "喬木", site: "pocket", pros: "耐剪、可雕塑型", cons: "極慢、需光", toxic: "無毒", partner: "麥門冬", desc: "對景植物。" },
+            { name: "柳杉", type: "喬木", site: "park", pros: "高大筆直、森林感", cons: "平地適應性普", toxic: "無毒", partner: "冷水花", desc: "生態林規劃。" },
+            { name: "白玉蘭", type: "喬木", site: "pocket", pros: "花香馥郁、傳統感", cons: "生長空間需求大", toxic: "無毒", partner: "含笑", desc: "氣味景觀。" },
+            { name: "印度紫檀", type: "喬木", site: "street", pros: "遮蔭效果極佳", cons: "根系淺易倒伏", toxic: "無毒", partner: "杜鵑", desc: "大型綠廊。" },
+            { name: "山櫻花", type: "喬木", site: "park", pros: "春櫻緋紅、誘鳥", cons: "不耐高溫多濕", toxic: "無毒", partner: "地被花卉", desc: "本土浪漫。" },
+            { name: "厚葉石斑木(喬木化)", type: "喬木", site: "street", pros: "強韌抗逆性", cons: "生長緩慢", toxic: "無毒", partner: "海桐", desc: "抗風景觀。" },
 
-            // --- 灌木 ---
-            { name: "月橘", type: "灌木", site: "pocket", pros: "花極香、耐修剪", cons: "易招介殼蟲", toxic: "無毒", partner: "光蠟樹", desc: "七里香綠籬。" },
-            { name: "杜鵑", type: "灌木", site: "park", pros: "開花強烈、易活", cons: "花後雜亂", toxic: "全株毒", partner: "樟樹", desc: "經典綠化。" },
-            { name: "矮仙丹", type: "灌木", site: "street", pros: "長年花期、耐曬", cons: "怕冷落葉", toxic: "無毒", partner: "黃連木", desc: "街道色塊。" },
-            { name: "馬纓丹", type: "灌木", site: "street", pros: "強健花多、耐旱", cons: "蔓延、帶刺", toxic: "果實毒", partner: "欒樹", desc: "蜜源植物。" },
-            { name: "變葉木", type: "灌木", site: "pocket", pros: "顏色極豐、多變", cons: "不耐寒害", toxic: "汁液毒", partner: "朱蕉", desc: "景觀亮點。" },
-            { name: "厚葉石斑木", type: "灌木", site: "street", pros: "極耐風鹽", cons: "生長慢", toxic: "無毒", partner: "山欖", desc: "濱海。" },
-            { name: "錫葉藤", type: "灌木", site: "pocket", pros: "紫花極美、貴氣", cons: "需架、慢", toxic: "無毒", partner: "含笑", desc: "垂直花牆。" },
-            { name: "朱蕉", type: "灌木", site: "pocket", pros: "紅葉色鮮、直挺", cons: "下葉易枯", toxic: "無毒", partner: "腎蕨", desc: "色彩核心。" },
-            { name: "金葉連翹", type: "灌木", site: "street", pros: "亮黃色、強健", cons: "需勤剪", toxic: "無毒", partner: "紫錦草", desc: "對比花帶。" },
-            { name: "南天竹", type: "灌木", site: "pocket", pros: "細雅、冬變紅", cons: "生長極慢", toxic: "全株毒", partner: "麥門冬", desc: "日系風格。" },
-            { name: "梔子花", type: "灌木", site: "pocket", pros: "白花香、高雅", cons: "易有蟲害", toxic: "無毒", partner: "含笑", desc: "香花精品。" },
-            { name: "小葉赤楠", type: "灌木", site: "street", pros: "新葉紅、原生", cons: "慢、貴", toxic: "無毒", partner: "杜鵑", desc: "高品質牆。" },
-            { name: "九重葛", type: "灌木", site: "street", pros: "爆花強悍", cons: "多刺難修", toxic: "無毒", partner: "馬纓丹", desc: "牆面。" },
-            { name: "藍花丹", type: "灌木", site: "park", pros: "藍花、氣質優", cons: "散亂需理", toxic: "汁液刺激", partner: "杜鵑", desc: "冷色調。" },
-            { name: "金鳥赫蕉", type: "灌木", site: "pocket", pros: "熱帶風、奇特", cons: "需水大", toxic: "無毒", partner: "棕櫚", desc: "特色花點。" },
-            // (灌木補齊至30種...)
+            // --- 灌木 (30 組) ---
+            { name: "月橘", type: "灌木", site: "pocket", pros: "花極香、耐重剪", cons: "易招介殼蟲", toxic: "無毒", partner: "光蠟樹", desc: "傳統七里香。" },
+            { name: "杜鵑", type: "灌木", site: "park", pros: "花量壯觀、易維護", cons: "花後景觀較亂", toxic: "全株毒", partner: "樟樹", desc: "公園色彩帶。" },
+            { name: "矮仙丹", type: "灌木", site: "street", pros: "長年花期、強健", cons: "不耐霜害", toxic: "無毒", partner: "黃連木", desc: "行道色塊。" },
+            { name: "馬纓丹", type: "灌木", site: "street", pros: "耐旱熱、花色多", cons: "侵略性強、有刺", toxic: "果實毒", partner: "台灣欒樹", desc: "強韌地被灌木。" },
+            { name: "春不老", type: "灌木", site: "street", pros: "極度耐陰、誘鳥", cons: "生長快需剪", toxic: "無毒", partner: "茄苳", desc: "大樹下綠化。" },
+            { name: "變葉木", type: "灌木", site: "pocket", pros: "葉色斑斕、醒目", cons: "怕冷落葉", toxic: "汁液刺激", partner: "朱蕉", desc: "焦點景觀。" },
+            { name: "厚葉石斑木", type: "灌木", site: "street", pros: "耐鹽防風強", cons: "生長慢", toxic: "無毒", partner: "文殊蘭", desc: "滨海住宅牆。" },
+            { name: "錫葉藤", type: "灌木", site: "pocket", pros: "藍紫花美、貴氣", cons: "需支撐架", toxic: "無毒", partner: "含笑", desc: "垂直花牆。" },
+            { name: "朱蕉", type: "灌木", site: "pocket", pros: "紅葉色鮮、直挺", cons: "老葉枯影響美觀", toxic: "無毒", partner: "腎蕨", desc: "色彩核心。" },
+            { name: "鵝掌藤", type: "灌木", site: "park", pros: "耐陰強、極易種", cons: "美感普", toxic: "無毒", partner: "姑婆芋", desc: "綠底植物。" },
+            { name: "梔子花", type: "灌木", site: "pocket", pros: "香味濃、白花美", cons: "蟲多、不耐旱", toxic: "無毒", partner: "含笑", desc: "精品花卉。" },
+            { name: "南天竹", type: "灌木", site: "pocket", pros: "細緻、冬變紅", cons: "極慢", toxic: "全株毒", partner: "沿階草", desc: "日系風格。" },
+            { name: "金葉連翹", type: "灌木", site: "street", pros: "亮黃色彩、強健", cons: "需勤修剪", toxic: "無毒", partner: "紫錦草", desc: "街道黃帶。" },
+            { name: "九重葛", type: "灌木", site: "street", pros: "爆花力強、耐旱", cons: "多刺維護難", toxic: "無毒", partner: "馬纓丹", desc: "圍牆亮點。" },
+            { name: "含笑花", type: "灌木", site: "pocket", pros: "香氣撲鼻、雅緻", cons: "生長緩慢", toxic: "無毒", partner: "楓香", desc: "口袋公園。" },
+            { name: "小葉赤楠", type: "灌木", site: "street", pros: "新葉紅、原生種", cons: "生長慢、單價高", toxic: "無毒", partner: "杜鵑", desc: "高品質綠籬。" },
+            { name: "鐵海棠", type: "灌木", site: "street", pros: "極耐旱熱、好種", cons: "全身刺危險", toxic: "乳汁毒", partner: "仙丹", desc: "抗性之王。" },
+            { name: "藍花丹", type: "灌木", site: "park", pros: "淡藍花色、優雅", cons: "枝條亂需修", toxic: "汁液刺激", partner: "杜鵑", desc: "冷色調配。" },
+            { name: "金鳥赫蕉", type: "灌木", site: "pocket", pros: "熱帶感、視覺強", cons: "需水大", toxic: "無毒", partner: "棕櫚", desc: "水岸特色。" },
+            { name: "六月雪", type: "灌木", site: "pocket", pros: "細葉、白碎花", cons: "怕熱、不耐旱", toxic: "無毒", partner: "沿階草", desc: "精緻小盆。" },
+            { name: "海桐", type: "灌木", site: "street", pros: "耐風耐鹽、強健", cons: "生長速度普", toxic: "無毒", partner: "文殊蘭", desc: "海岸綠化。" },
+            { name: "紅蝴蝶", type: "灌木", site: "street", pros: "花形美如蝶", cons: "帶小刺", toxic: "無毒", partner: "仙丹", desc: "特色灌木。" },
+            { name: "銀葉菊", type: "灌木", site: "pocket", pros: "銀白質感、特殊", cons: "怕積水枯萎", toxic: "無毒", partner: "紫錦草", desc: "色彩對比。" },
+            { name: "紅花檵木", type: "灌木", site: "pocket", pros: "紫紅葉、姿態美", cons: "需強光", toxic: "無毒", partner: "麥門冬", desc: "精品色葉。" },
+            { name: "夜來香", type: "灌木", site: "pocket", pros: "夜間極香", cons: "日間視覺普", toxic: "過敏注意", partner: "月橘", desc: "氣味花園。" },
+            { name: "扶桑花", type: "灌木", site: "park", pros: "大朵四季、色艷", cons: "易患介殼蟲", toxic: "無毒", partner: "月橘", desc: "熱帶風情。" },
+            { name: "小葉黃楊", type: "灌木", site: "pocket", pros: "極耐剪、幾何型", cons: "慢", toxic: "無毒", partner: "石板", desc: "法式修剪。" },
+            { name: "大花曼陀羅", type: "灌木", site: "park", pros: "花型特大、壯觀", cons: "全株劇毒", toxic: "全株劇毒", partner: "野薑花", desc: "水邊背景。" },
+            { name: "雪茄花", type: "灌木", site: "pocket", pros: "細緻紫花、持久", cons: "怕旱、怕寒", toxic: "無毒", partner: "沿階草", desc: "微景觀。" },
+            { name: "茉莉花", type: "灌木", site: "pocket", pros: "國民花香、親切", cons: "株形散亂", toxic: "無毒", partner: "含笑", desc: "氣味景觀。" },
 
-            // --- 地被 ---
-            { name: "腎蕨", type: "地被", site: "park", pros: "極耐陰、覆蓋快", cons: "不耐踩", toxic: "無毒", partner: "樟樹", desc: "陰性綠化。" },
-            { name: "沿階草", type: "地被", site: "pocket", pros: "耐踩耐陰旱", cons: "生長慢", toxic: "無毒", partner: "步道", desc: "基礎底襯。" },
-            { name: "馬蹄金", type: "地被", site: "pocket", pros: "精緻如毯", cons: "怕澇怕乾", toxic: "無毒", partner: "石板", desc: "精緻地被。" },
-            { name: "蔓花生", type: "地被", site: "street", pros: "黃花美、定氮強", cons: "雜草混", toxic: "無毒", partner: "欒樹", desc: "生態草坪。" },
-            { name: "姑婆芋", type: "地被", site: "park", pros: "巨大葉、森林感", cons: "全株劇毒", toxic: "劇毒", partner: "茄苳", desc: "視覺核心。" },
-            { name: "紫錦草", type: "地被", site: "street", pros: "色彩特殊、強", cons: "脆弱易碎", toxic: "汁液刺激", partner: "連翹", desc: "色彩對比。" },
-            { name: "文殊蘭", type: "地被", site: "street", pros: "耐風耐鹽大器", cons: "易招蝸牛", toxic: "鱗莖毒", partner: "山欖", desc: "濱海點綴。" },
-            { name: "麥門冬", type: "地被", site: "pocket", pros: "耐陰原生穩定", cons: "視覺普", toxic: "無毒", partner: "羅漢松", desc: "萬用地被。" },
-            { name: "銅錢草", type: "地被", site: "park", pros: "極易種植、圓潤", cons: "侵佔強", toxic: "無毒", partner: "水邊", desc: "水生景觀。" },
-            { name: "野薑花", type: "地被", site: "park", pros: "花香、親水", cons: "冬凋零", toxic: "無毒", partner: "落羽松", desc: "水岸主力。" },
-            { name: "虎尾蘭", type: "地被", site: "street", pros: "極耐污染、硬派", cons: "生長慢", toxic: "無毒", partner: "樟樹", desc: "街道淨化。" }
-            // (地被補齊至30種...)
+            // --- 地被 (30 組) ---
+            { name: "腎蕨", type: "地被", site: "park", pros: "極耐陰、覆蓋快", cons: "不耐踩、冬季黃", toxic: "無毒", partner: "樟樹", desc: "陰性綠化之王。" },
+            { name: "沿階草", type: "地被", site: "pocket", pros: "耐踩、耐陰旱", cons: "生長極慢", toxic: "無毒", partner: "步道", desc: "地被基礎。" },
+            { name: "馬蹄金", type: "地被", site: "pocket", pros: "圓葉精緻、地毯感", cons: "怕積水淹死", toxic: "無毒", partner: "石板縫", desc: "精緻庭園。" },
+            { name: "蔓花生", type: "地被", site: "street", pros: "黃花美、強健定氮", cons: "易雜草混入", toxic: "無毒", partner: "台灣欒樹", desc: "生態草坪。" },
+            { name: "姑婆芋", type: "地被", site: "park", pros: "大葉視覺強、原生", cons: "全株劇毒、蔓延", toxic: "全株劇毒", partner: "茄苳", desc: "森林感營造。" },
+            { name: "紫錦草", type: "地被", site: "street", pros: "紫色亮眼、耐旱", cons: "脆易斷、怕踩", toxic: "汁液刺激", partner: "金葉連翹", desc: "強烈對比層次。" },
+            { name: "文殊蘭", type: "地被", site: "street", pros: "耐風鹽、大氣美", cons: "易招蝸牛、鱗莖毒", toxic: "鱗莖毒", partner: "大葉山覽", desc: "濱海地景。" },
+            { name: "麥門冬", type: "地被", site: "pocket", pros: "耐陰旱、原生種", cons: "視覺較普通", toxic: "無毒", partner: "羅漢松", desc: "低維護地被。" },
+            { name: "銅錢草", type: "地被", site: "park", pros: "極易種活、圓潤", cons: "侵佔力過強", toxic: "無毒", partner: "水邊空間", desc: "水景點綴。" },
+            { name: "野薑花", type: "地被", site: "park", pros: "花香、親水耐淹", cons: "冬枯萎較醜", toxic: "無毒", partner: "落羽松", desc: "水綠淨化。" },
+            { name: "虎尾蘭", type: "地被", site: "street", pros: "抗污染極強、耐陰", cons: "生長速度慢", toxic: "無毒", partner: "樟樹", desc: "街道淨化。" },
+            { name: "馬鞍藤", type: "地被", site: "street", pros: "海濱沙地王、耐鹽", cons: "非沙地不適應", toxic: "無毒", partner: "大葉山欖", desc: "濱海沙丘綠化。" },
+            { name: "蜘蛛抱蛋", type: "地被", site: "park", pros: "極度耐陰、極少死", cons: "生長極慢", toxic: "無毒", partner: "春不老", desc: "陰暗死角救星。" },
+            { name: "冷水花", type: "地被", site: "park", pros: "斑紋美、耐陰濕", cons: "不耐強曬", toxic: "無毒", partner: "苦楝", desc: "地被細節。" },
+            { name: "白蝴蝶", type: "地被", site: "pocket", pros: "銀白斑紋、亮眼", cons: "怕寒冷", toxic: "汁液刺激", partner: "朱蕉", desc: "亮色地帶。" },
+            { name: "石蒜", type: "地被", site: "park", pros: "花開震撼、季節感", cons: "花期極短、葉先落", toxic: "全株毒", partner: "喬木林下", desc: "焦點地被。" },
+            { name: "射干", type: "地被", site: "park", pros: "花豹紋美、強健", cons: "種子多易亂長", toxic: "無毒", partner: "馬纓丹", desc: "野性美景觀。" },
+            { name: "天門冬", type: "地被", site: "pocket", pros: "細密、懸垂效果好", cons: "帶小刺、需理", toxic: "無毒", partner: "石牆邊", desc: "立體化配置。" },
+            { name: "紫嬌花", type: "地被", site: "street", pros: "紫色花、耐旱強", cons: "蔥蒜味重", toxic: "無毒", partner: "連翹", desc: "耐旱花帶。" },
+            { name: "鋪地黍", type: "地被", site: "street", pros: "水土保持極佳", cons: "質感野、雜亂", toxic: "無毒", partner: "欒樹", desc: "斜坡綠化。" },
+            { name: "蔓馬纓丹", type: "地被", site: "street", pros: "花期極長、鋪地快", cons: "帶刺需定期修", toxic: "有毒", partner: "喬木", desc: "粗放地被。" },
+            { name: "過山龍", type: "地被", site: "park", pros: "蕨類質感、原生", cons: "需濕度極高", toxic: "無毒", partner: "濕地邊", desc: "生態綠化。" },
+            { name: "鳳尾蕨", type: "地被", site: "park", pros: "姿態優雅、耐陰", cons: "不耐曬、不耐乾", toxic: "無毒", partner: "建築陰影", desc: "陰性氛圍。" },
+            { name: "翠蘆莉(矮種)", type: "地被", site: "street", pros: "紫花美、無敵強", cons: "易過度擴張", toxic: "無毒", partner: "仙丹", desc: "街道花地。" },
+            { name: "彩葉芋", type: "地被", site: "pocket", pros: "葉色美如畫", cons: "休眠期光禿", toxic: "汁液毒", partner: "春不老", desc: "精品裝飾。" },
+            { name: "蟛蜞菊", type: "地被", site: "street", pros: "強大覆蓋、耐活", cons: "侵略性太強", toxic: "無毒", partner: "大葉山欖", desc: "覆蓋之王。" },
+            { name: "黃波斯菊", type: "地被", site: "park", pros: "花海感、吸引昆蟲", cons: "一年生、花後亂", toxic: "無毒", partner: "喬木林", desc: "季節性色彩。" },
+            { name: "孔雀竹芋", type: "地被", site: "pocket", pros: "紋路精美", cons: "不耐寒、怕曬", toxic: "無毒", partner: "含笑", desc: "高端配置。" },
+            { name: "冷水花", type: "地被", site: "park", pros: "葉面紋理質感", cons: "怕熱怕乾", toxic: "無毒", partner: "杜鵑", desc: "陰影細部。" },
+            { name: "垂盆草", type: "地被", site: "pocket", pros: "耐旱、掛壁美", cons: "不耐踩", toxic: "無毒", partner: "盆台邊", desc: "懸垂綠化。" }
         ];
-
-        // 確保數據量顯示
-        for(let i=1; i<=20; i++) {
-            plantDB.push({ name: `原生石斑木_${i}`, type: "灌木", site: "street", pros: "強健", cons: "慢", toxic: "無毒", partner: "配草", desc: "台灣原生種。" });
-            plantDB.push({ name: `台灣地被草_${i}`, type: "地被", site: "park", pros: "綠意", cons: "普", toxic: "無毒", partner: "配樹", desc: "常用綠化地被。" });
-            plantDB.push({ name: `特選行道樹_${i}`, type: "喬木", site: "street", pros: "遮蔭", cons: "理", toxic: "無毒", partner: "配灌", desc: "特選行道樹種。" });
-        }
 
         let state = { site: 'all', type: 'all' };
 
@@ -179,11 +208,11 @@
             }
             const found = caseList.filter(c => c.name.includes(val) || c.desc.includes(val) || c.tags.includes(val));
             display.innerHTML = found.length > 0 ? found.map(r => `
-                <div class="p-3 bg-emerald-50 border-l-4 border-emerald-900 rounded text-[10px]">
+                <div class="p-4 bg-emerald-50 border-l-4 border-emerald-900 rounded-xl shadow-sm text-[10px]">
                     <p class="font-bold text-emerald-950">${r.name}</p>
-                    <p class="text-slate-600 mt-1 font-light">${r.desc}</p>
+                    <p class="text-slate-600 mt-1 font-light leading-relaxed">${r.desc}</p>
                 </div>
-            `).join('') : '<p class="text-xs text-slate-400 py-10 text-center">查無案例</p>';
+            `).join('') : '<p class="text-xs text-slate-400 py-10 text-center">查無案例，請換關鍵字</p>';
         }
 
         function render() {
@@ -196,18 +225,18 @@
                 return matchSearch && matchSite && matchType;
             });
             grid.innerHTML = filtered.map(p => `
-                <div class="plant-card bg-white rounded-2xl border border-slate-100 p-5 flex flex-col h-full shadow-sm">
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="px-2 py-0.5 bg-emerald-900 text-white rounded text-[9px] font-bold uppercase">${p.type}</span>
+                <div class="plant-card bg-white rounded-3xl border border-slate-100 p-6 flex flex-col shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="px-2.5 py-1 bg-emerald-900 text-white rounded-lg text-[9px] font-bold uppercase tracking-wider">${p.type}</span>
                         <span class="text-[9px] font-bold ${p.toxic === '無毒' ? 'text-slate-300' : 'text-rose-500'}">☢ ${p.toxic}</span>
                     </div>
-                    <h3 class="text-xl font-black text-slate-800 mb-1">${p.name}</h3>
-                    <div class="space-y-1 mt-2 flex-grow text-[10px] text-slate-500 leading-relaxed">
-                        <p><strong>優點：</strong>${p.pros}</p>
-                        <p><strong>缺點：</strong>${p.cons}</p>
+                    <h3 class="text-xl font-black text-slate-800 mb-1 leading-tight">${p.name}</h3>
+                    <div class="space-y-2 mt-4 flex-grow text-[10px] text-slate-500 leading-relaxed">
+                        <p><strong>👍 優點：</strong>${p.pros}</p>
+                        <p><strong>👎 缺點：</strong>${p.cons}</p>
                     </div>
-                    <div class="mt-4 pt-3 border-t border-dashed border-slate-100">
-                        <p class="text-[8px] text-emerald-900 font-bold mb-1 uppercase italic">Combo 建議</p>
+                    <div class="mt-5 pt-4 border-t border-dashed border-slate-100">
+                        <p class="text-[8px] text-emerald-900 font-bold mb-1 uppercase italic tracking-widest">Design Combo</p>
                         <p class="text-xs font-bold text-slate-700">🤝 ${p.partner}</p>
                     </div>
                 </div>
